@@ -1,7 +1,8 @@
 import type { LayoutServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
+import { env } from '$env/dynamic/private';
 
-const API_BASE_URL = 'http://localhost:8080/api/web';
+const API_BASE_URL = (env.API_BASE_URL ?? 'http://localhost:8080/api/web').replace(/\/$/, '');
 const LOG_PREFIX = '[HubComercio][LayoutServer]';
 
 export const load: LayoutServerLoad = async ({ fetch, locals }) => {
@@ -21,7 +22,11 @@ export const load: LayoutServerLoad = async ({ fetch, locals }) => {
 	try {
 		const storefrontUrl = `${API_BASE_URL}/${encodeURIComponent(subdomain)}/storefront`;
 		console.info(`${LOG_PREFIX} Consultando storefront`, { subdomain, storefrontUrl });
-		response = await fetch(storefrontUrl);
+		response = await fetch(storefrontUrl, {
+			headers: {
+				'ngrok-skip-browser-warning': 'true'
+			}
+		});
 	} catch (cause) {
 		console.error(`${LOG_PREFIX} Error de conexión con storefront`, { subdomain, cause });
 		error(502, 'No se pudo conectar con el servicio de tiendas');
