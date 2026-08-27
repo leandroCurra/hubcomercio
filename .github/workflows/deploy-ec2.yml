@@ -1,0 +1,91 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+concurrency:
+  group: hubcomercio-ec2
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Validate project
+        run: bun run check
+
+      - name: Package source
+        run: |
+          tar \
+            --exclude=.git \
+            --exclude=.github \
+            --exclude=.env \
+            --exclude='.env.*' \
+            --exclude=.svelte-kit \
+            --exclude=build \
+            --exclude=node_modules \
+            -czf /tmp/hubcomercio.tar.gz .
+
+      - name: Configure SSH
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/ec2_key
+          chmod 600 ~/.ssh/ec2_key
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+      - name: Upload release
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          scp \
+            -i ~/.ssh/ec2_key \
+            /tmp/hubcomercio.tar.gz \
+            "ubuntu@$EC2_HOST:/tmp/hubcomercio.tar.gz"
+
+      - name: Deploy and restart service
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          ssh -i ~/.ssh/ec2_key "ubuntu@$EC2_HOST" <<'REMOTE'
+            set -euo pipefail
+
+            APP_DIR=/home/ubuntu/hubcomercio
+            ARCHIVE=/tmp/hubcomercio.tar.gz
+
+            test "$APP_DIR" = "/home/ubuntu/hubcomercio"
+            test -d "$APP_DIR"
+
+            # Remove source directories so files deleted in Git do not remain on EC2.
+            rm -rf "$APP_DIR/src" "$APP_DIR/static"
+            tar -xzf "$ARCHIVE" -C "$APP_DIR"
+            rm -f "$ARCHIVE"
+
+            cd "$APP_DIR"
+            /home/ubuntu/.bun/bin/bun install --frozen-lockfile
+            /home/ubuntu/.bun/bin/bun run build
+
+            sudo -n systemctl restart hubcomercio.service
+            sudo -n systemctl is-active --quiet hubcomercio.service
+          REMOTE
