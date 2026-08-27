@@ -2,11 +2,14 @@ import type { LayoutServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 
 const API_BASE_URL = 'http://localhost:8080/api/web';
+const LOG_PREFIX = '[HubComercio][LayoutServer]';
 
 export const load: LayoutServerLoad = async ({ fetch, locals }) => {
 	const { subdomain } = locals;
+	console.info(`${LOG_PREFIX} Iniciando carga`, { subdomain });
 
 	if (!subdomain) {
+		console.info(`${LOG_PREFIX} Solicitud sin subdominio`);
 		return {
 			subdomain,
 			storefront: null
@@ -16,18 +19,27 @@ export const load: LayoutServerLoad = async ({ fetch, locals }) => {
 	let response: Response;
 
 	try {
-		console.log( 'trye' )
-		response = await fetch(
-			`${API_BASE_URL}/${encodeURIComponent(subdomain)}/storefront`
-		);
-	} catch {
-		console.log(subdomain  );
+		const storefrontUrl = `${API_BASE_URL}/${encodeURIComponent(subdomain)}/storefront`;
+		console.info(`${LOG_PREFIX} Consultando storefront`, { subdomain, storefrontUrl });
+		response = await fetch(storefrontUrl);
+	} catch (cause) {
+		console.error(`${LOG_PREFIX} Error de conexión con storefront`, { subdomain, cause });
 		error(502, 'No se pudo conectar con el servicio de tiendas');
 	}
 
 	if (!response.ok) {
+		console.error(`${LOG_PREFIX} Storefront respondió con error`, {
+			subdomain,
+			status: response.status,
+			statusText: response.statusText
+		});
 		error(response.status, `No se pudo obtener la tienda ${subdomain}`);
 	}
+
+	console.info(`${LOG_PREFIX} Storefront cargado correctamente`, {
+		subdomain,
+		status: response.status
+	});
 
 	return {
 		subdomain,
