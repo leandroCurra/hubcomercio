@@ -33,17 +33,11 @@ jobs:
       - name: Validate project
         run: bun run check
 
-      - name: Package source
-        run: |
-          tar \
-            --exclude=.git \
-            --exclude=.github \
-            --exclude=.env \
-            --exclude='.env.*' \
-            --exclude=.svelte-kit \
-            --exclude=build \
-            --exclude=node_modules \
-            -czf /tmp/hubcomercio.tar.gz .
+      - name: Build production app
+        run: bun run build
+
+      - name: Package build
+        run: tar -czf /tmp/hubcomercio.tar.gz build
 
       - name: Configure SSH
         env:
@@ -60,10 +54,7 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
-          scp \
-            -i ~/.ssh/ec2_key \
-            /tmp/hubcomercio.tar.gz \
-            "$SSH_USER@$SSH_HOST:/tmp/hubcomercio.tar.gz"
+          scp -i ~/.ssh/ec2_key /tmp/hubcomercio.tar.gz "$SSH_USER@$SSH_HOST:/tmp/hubcomercio.tar.gz"
 
       - name: Deploy and restart service
         env:
@@ -79,14 +70,10 @@ jobs:
             test "$APP_DIR" = "/var/www/commerce-front"
             test -d "$APP_DIR"
 
-            # Remove source directories so files deleted in Git do not remain on EC2.
-            rm -rf "$APP_DIR/src" "$APP_DIR/static"
+            rm -rf "$APP_DIR/build"
             tar -xzf "$ARCHIVE" -C "$APP_DIR"
             rm -f "$ARCHIVE"
-
-            cd "$APP_DIR"
-            /home/ubuntu/.bun/bin/bun install --frozen-lockfile
-            /home/ubuntu/.bun/bin/bun run build
+            test -f "$APP_DIR/build/index.js"
 
             sudo -n systemctl restart hubcomercio.service
             sudo -n systemctl is-active --quiet hubcomercio.service
