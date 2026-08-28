@@ -1,6 +1,6 @@
 import { error, type Handle } from '@sveltejs/kit';
 
-const ROOT_DOMAIN = 'hubcomercio.com';
+const ROOT_DOMAIN = 'corestore.com.ar';
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '0.0.0.0', '::1']);
 
 function getSubdomain(hostname: string): string | null {
