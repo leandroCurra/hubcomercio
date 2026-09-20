@@ -43,13 +43,13 @@
 
 	<!-- Color Swatch -->
 	<div class="option">
-		<label>Color: <span>{product.color}</span></label>
+		<span class="option-label">Color: <span>{product.color}</span></span>
 		<button class="swatch active" aria-label={product.color}></button>
 	</div>
 
 	<!-- Size Selector -->
 	<div class="option sizes">
-		<label>Talle {#if selectedSize}<b>({selectedSize})</b>{/if}</label>
+		<span class="option-label">Talle {#if selectedSize}<b>({selectedSize})</b>{/if}</span>
 		<div class="size-buttons">
 			{#each product.sizes as size}
 				<button
@@ -169,15 +169,15 @@
 		padding-top: 22px;
 	}
 
-	.option label {
+	.option-label {
 		display: block;
 		font-size: 12px;
 		margin-bottom: 12px;
 		color: #333;
 	}
 
-	.option label span,
-	.option label b {
+	.option-label span,
+	.option-label b {
 		color: #111;
 		font-weight: 600;
 	}

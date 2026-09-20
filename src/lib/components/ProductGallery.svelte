@@ -37,6 +37,8 @@
 
 	<div
 		class="track"
+		role="region"
+		aria-label="Carrusel de imágenes de producto"
 		style={`transform: translateX(-${current * 100}%);`}
 		ontouchstart={handleTouchStart}
 		ontouchend={handleTouchEnd}

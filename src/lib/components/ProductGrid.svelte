@@ -185,7 +185,7 @@
 		<!-- Product Grid -->
 		<div class="grid" class:six={columns === 'six'}>
 			{#each filteredProducts as product}
-				<article
+				<div
 					class="card"
 					onclick={() => onSelectProduct?.(product)}
 					role="button"
@@ -235,7 +235,7 @@
 							SELECCIONAR TALLE
 						</button>
 					</div>
-				</article>
+				</div>
 			{/each}
 		</div>
 	</section>
