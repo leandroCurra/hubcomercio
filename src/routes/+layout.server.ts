@@ -38,7 +38,7 @@ export const load: LayoutServerLoad = async ({ fetch, locals }) => {
 			status: response.status,
 			statusText: response.statusText
 		});
-		error(response.status, `No se pudo obtener la tienda ${subdomain}`);
+		error(response.status, `No se pudo obtener la tienda test ${subdomain}`);
 	}
 
 	console.info(`${LOG_PREFIX} Storefront cargado correctamente`, {
