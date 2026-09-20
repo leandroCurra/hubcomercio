@@ -7,9 +7,22 @@
 	let searchQuery = $state('');
 </script>
 
-<!-- Top Announcement Promo -->
+<!-- Top Announcement Promo (Dynamic from Store Settings) -->
 <div class="promo">
-	<span>WINTER SALE UP TO 60% OFF · ENVÍOS A TODO EL PAÍS</span>
+	<span>
+		{#if store?.allowDelivery && store?.allowPickup}
+			ENVÍOS A TODO EL PAÍS Y RETIRO EN LOCAL DISPONIBLE · {store?.city ? store.city.toUpperCase() : 'TIENDA OFICIAL'}
+		{:else if store?.allowDelivery}
+			ENVÍOS A DOMICILIO DISPONIBLES · {store?.city ? store.city.toUpperCase() : 'ARGENTINA'}
+		{:else if store?.allowPickup}
+			RETIRO POR NUESTRO LOCAL: {store?.addressLine1 ? store.addressLine1.toUpperCase() : ''}
+		{:else}
+			VENTA ONLINE · {storeName.toUpperCase()}
+		{/if}
+		{#if store?.minimumOrderAmount && store.minimumOrderAmount > 0}
+			· COMPRA MÍNIMA ${store.minimumOrderAmount.toLocaleString('es-AR')}
+		{/if}
+	</span>
 </div>
 
 <!-- Main Header -->
@@ -32,9 +45,9 @@
 
 	<nav class="nav">
 		<a href="/" class="active">SALE</a>
-		<a href="/#catalogo">INVIERNO 26</a>
-		<a href="/#catalogo">2X1</a>
+		<a href="/#catalogo">COLECCIÓN</a>
 		<a href="/#beneficios">BENEFICIOS</a>
+		<a href="/#contacto">CONTACTO</a>
 	</nav>
 
 	<div class="actions">
@@ -46,6 +59,18 @@
 				bind:value={searchQuery}
 			/>
 		</div>
+
+		{#if store?.contactPhone}
+			<a
+				href={`https://wa.me/${store.contactPhone.replace(/\D/g, '')}`}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="contact-link"
+				title={`Contactar por WhatsApp al ${store.contactPhone}`}
+			>
+				WhatsApp
+			</a>
+		{/if}
 
 		<button class="account-btn" aria-label="Mi cuenta">♙</button>
 
@@ -167,6 +192,22 @@
 		width: 100%;
 		font-family: inherit;
 		color: #333;
+	}
+
+	.contact-link {
+		font-size: 11px;
+		font-weight: 600;
+		color: #25d366;
+		text-decoration: none;
+		border: 1px solid #25d366;
+		padding: 5px 10px;
+		border-radius: 4px;
+		transition: all 0.2s;
+	}
+
+	.contact-link:hover {
+		background: #25d366;
+		color: #fff;
 	}
 
 	.account-btn {

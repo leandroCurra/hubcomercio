@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { cart } from '$lib/cart.svelte';
-	import type { Product } from '$lib/types';
+	import type { Product, Storefront } from '$lib/types';
 
-	let { product }: { product: Product } = $props();
+	let { product, store }: { product: Product; store: Storefront } = $props();
 
 	let selectedSize = $state('');
 
@@ -81,23 +81,53 @@
 		<p class="sku">SKU: {product.sku}</p>
 	{/if}
 
-	<!-- Collapsible Accordions -->
+	<!-- Collapsible Accordions with Real Storefront Data -->
 	<div class="accordions">
 		<details>
-			<summary>Composición</summary>
+			<summary>Composición y cuidados</summary>
 			<p>{product.composition ?? 'Materiales seleccionados de primera calidad. Ver etiqueta interior.'}</p>
 		</details>
 		<details>
-			<summary>Disponibilidad en locales</summary>
-			<p>Consultá disponibilidad seleccionando tu talle en las sucursales habilitadas.</p>
+			<summary>Retiro en local</summary>
+			<p>
+				{#if store?.allowPickup}
+					<b>✓ Retiro en sucursal habilitado</b><br />
+					Podés retirar tu pedido en: <span>{store.addressLine1}, {store.city} ({store.province}) - CP {store.postalCode}</span>.
+				{:else}
+					Esta tienda actualmente no ofrece retiro en local comercial.
+				{/if}
+			</p>
 		</details>
 		<details>
-			<summary>Métodos de envío</summary>
-			<p>Envío gratis en compras superiores a $150.000. Entrega a domicilio en todo el país y retiro en sucursales.</p>
+			<summary>Métodos de envío y entrega</summary>
+			<p>
+				{#if store?.allowDelivery}
+					<b>✓ Envíos a domicilio disponibles</b><br />
+					Entregas en {store.city}, {store.province} y a todo el país ({store.countryCode}).
+					{#if store.minimumOrderAmount && store.minimumOrderAmount > 0}
+						<br /><small>Monto mínimo de compra: ${store.minimumOrderAmount.toLocaleString('es-AR')}.</small>
+					{/if}
+				{:else}
+					Por el momento no contamos con envíos a domicilio.
+				{/if}
+			</p>
 		</details>
 		<details>
 			<summary>Medios de pago</summary>
-			<p>Aceptamos todas las tarjetas de débito y crédito. Disfrutá de hasta 3 cuotas sin interés con bancos seleccionados.</p>
+			<p>
+				Operamos en moneda nacional (<b>{store?.currencyCode ?? 'ARS'}</b>). Aceptamos tarjetas de débito, crédito y transferencias bancarias. Hasta 3 cuotas sin interés.
+			</p>
+		</details>
+		<details>
+			<summary>Contacto y atención comercial</summary>
+			<p>
+				{#if store?.contactPhone}
+					Teléfono / WhatsApp: <a href={`tel:${store.contactPhone}`}>{store.contactPhone}</a><br />
+				{/if}
+				{#if store?.contactEmail}
+					Email: <a href={`mailto:${store.contactEmail}`}>{store.contactEmail}</a>
+				{/if}
+			</p>
 		</details>
 	</div>
 </aside>

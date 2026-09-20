@@ -65,7 +65,15 @@
 
 <div
 	class="store-wrapper"
-	style={`--primary:${store.primaryColor}; --accent:${store.accentColor};`}
+	style={`
+		--primary: ${store.primaryColor || '#111827'};
+		--secondary: ${store.secondaryColor || '#374151'};
+		--accent: ${store.accentColor || '#e52024'};
+		--surface: ${store.backgroundColor || '#FFFFFF'};
+		--text: ${store.textColor || '#111827'};
+		--heading: '${store.headingFontFamily || 'Work Sans'}', sans-serif;
+		--body: '${store.bodyFontFamily || 'Work Sans'}', sans-serif;
+	`}
 >
 	<!-- Global Navigation Header -->
 	<Header {store} {storeName} />
@@ -82,12 +90,13 @@
 	<!-- Main Product Detail View (PDP) -->
 	<main id="producto-detalle" class="product-section">
 		<ProductGallery images={activeProduct.images} name={activeProduct.name} />
-		<ProductDetails product={activeProduct} />
+		<ProductDetails product={activeProduct} {store} />
 	</main>
 
 	<!-- Product Catalog & Filters (PLP) -->
 	<ProductGrid
 		products={SAMPLE_PRODUCTS}
+		{store}
 		onSelectProduct={handleSelectProduct}
 	/>
 

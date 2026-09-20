@@ -73,12 +73,16 @@
 			<h4>Ubicación</h4>
 			<span>{store?.addressLine1 ?? 'Buenos Aires, Argentina'}</span>
 			<span>{store?.city ? `${store.city}, ${store.province}` : ''}</span>
+			<span>{store?.postalCode ? `CP ${store.postalCode}` : ''} {store?.countryCode ? `(${store.countryCode})` : ''}</span>
 		</div>
 
 		<div class="info-block">
 			<h4>Entregas</h4>
-			<span>{store?.allowPickup ? '✓ Retiro en local habilitado' : 'Retiro no disponible'}</span>
-			<span>{store?.allowDelivery ? '✓ Envíos a domicilio activos' : 'Consultar opciones de envío'}</span>
+			<span>{store?.allowPickup ? '✓ Retiro en local habilitado' : 'Retiro presencial no disponible'}</span>
+			<span>{store?.allowDelivery ? '✓ Envíos a domicilio activos' : 'Solo venta local'}</span>
+			{#if store?.minimumOrderAmount && store.minimumOrderAmount > 0}
+				<small>Compra mín: ${store.minimumOrderAmount.toLocaleString('es-AR')} {store?.currencyCode ?? 'ARS'}</small>
+			{/if}
 		</div>
 	</div>
 

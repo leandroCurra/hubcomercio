@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { cart } from '$lib/cart.svelte';
-	import type { Product } from '$lib/types';
+	import type { Product, Storefront } from '$lib/types';
 
 	let {
 		products = [],
+		store,
 		onSelectProduct
 	}: {
 		products: Product[];
+		store?: Storefront;
 		onSelectProduct?: (product: Product) => void;
 	} = $props();
 
@@ -89,10 +91,16 @@
 
 <div class="catalog" id="catalogo">
 	<!-- Hero Banner -->
-	<picture class="hero-banner">
-		<source media="(max-width: 700px)" srcset="/assets/banner-mobile.jpg" />
-		<img src="/assets/banner-desktop.jpg" alt="Winter Sale hasta 60% off" />
-	</picture>
+	{#if store?.heroImageUrl && store.heroImageUrl !== 'http://localhost:4200/images/logo/logo.svg'}
+		<div class="hero-banner">
+			<img src={store.heroImageUrl} alt="Banner principal" />
+		</div>
+	{:else}
+		<picture class="hero-banner">
+			<source media="(max-width: 700px)" srcset="/assets/banner-mobile.jpg" />
+			<img src="/assets/banner-desktop.jpg" alt="Winter Sale hasta 60% off" />
+		</picture>
+	{/if}
 
 	<section class="catalog-content">
 		<div class="heading">
